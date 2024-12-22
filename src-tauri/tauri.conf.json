@@ -14,11 +14,20 @@
       {
         "title": "photo-border",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "label": "main",
+        "fullscreen": true,
+        "resizable": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["**"]
+        }
+      }
     }
   },
   "bundle": {
