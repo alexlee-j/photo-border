@@ -75,15 +75,15 @@ export function Navbar({
                     <input
                       type="range"
                       min="0"
-                      max="500"
+                      max="100"
                       value={borderSize}
                       onChange={(e) => onBorderSizeChange(Number(e.target.value))}
                       className="w-full"
                     />
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>0px</span>
-                      <span>250px</span>
-                      <span>500px</span>
+                      <span>50px</span>
+                      <span>100px</span>
                     </div>
                   </div>
 

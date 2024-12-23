@@ -8,6 +8,19 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { Slider } from '../ui/slider';
 
+interface AdjustmentPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  borderSize: number;
+  onBorderSizeChange: (size: number) => void;
+  borderColor: string;
+  onBorderColorChange: (color: string) => void;
+  textColor: string;
+  onTextColorChange: (color: string) => void;
+}
+
 export function AdjustmentPanel({
   open,
   onOpenChange,
@@ -19,7 +32,7 @@ export function AdjustmentPanel({
   onBorderColorChange,
   textColor,
   onTextColorChange,
-}) {
+}: AdjustmentPanelProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">

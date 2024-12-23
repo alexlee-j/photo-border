@@ -4,6 +4,7 @@
 mod commands;
 mod image_processor;
 
+#[cfg(debug_assertions)]
 use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 
