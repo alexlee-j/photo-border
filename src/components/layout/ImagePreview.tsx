@@ -75,7 +75,7 @@ export const ImagePreview = forwardRef<HTMLDivElement, ImagePreviewProps>(
           <div className="flex flex-col items-center justify-center gap-4">
             <IconPhoto className="w-12 h-12 text-gray-400" stroke={1.5} />
             <p className="text-gray-500 text-lg">
-              Click the folder icon to open an image
+              点击左上角文件夹图标打开图片
             </p>
           </div>
         ) : (

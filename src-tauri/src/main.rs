@@ -4,8 +4,6 @@
 mod commands;
 mod image_processor;
 
-#[cfg(debug_assertions)]
-use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 
 fn main() {
@@ -15,13 +13,6 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
-                window.close_devtools();
-            }
-            
             // 配置权限
             app.try_fs_scope().unwrap().allow_directory("/", true)?;
             

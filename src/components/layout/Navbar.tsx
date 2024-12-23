@@ -71,7 +71,7 @@ export function Navbar({
               <PopoverContent className="w-80" align="start">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Border Size</label>
+                    <label className="text-sm font-medium">边框大小</label>
                     <input
                       type="range"
                       min="0"
@@ -88,7 +88,7 @@ export function Navbar({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Text Color</label>
+                    <label className="text-sm font-medium">文本颜色</label>
                     <div className="relative">
                       <input
                         type="color"
@@ -100,7 +100,7 @@ export function Navbar({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Border Color</label>
+                    <label className="text-sm font-medium">边框颜色</label>
                     <div className="relative">
                       <input
                         type="color"

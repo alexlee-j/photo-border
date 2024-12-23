@@ -138,16 +138,18 @@ function App() {
       });
 
       toast({
-        title: "Image Saved",
-        description: "Your image has been saved successfully.",
+        title: "保存成功",
+        description: "图片已成功保存。",
       });
     } catch (e) {
       console.error('Failed to save image:', e);
       toast({
-        title: "Error",
-        description: "Failed to save image.",
+        title: "保存失败",
+        description: "图片保存过程中出现错误。",
         variant: "destructive",
       });
+    } finally {
+      setSaving(false);
     }
   };
 

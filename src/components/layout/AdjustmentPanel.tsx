@@ -37,23 +37,23 @@ export function AdjustmentPanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Image Adjustments</DialogTitle>
+          <DialogTitle>图片调整</DialogTitle>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="adjust">
               <IconPhoto className="mr-2 h-4 w-4" />
-              Adjust
+              调整
             </TabsTrigger>
             <TabsTrigger value="border">
               <IconBrush className="mr-2 h-4 w-4" />
-              Border
+              边框
             </TabsTrigger>
           </TabsList>
           <TabsContent value="adjust" className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Border Size</label>
+                <label className="text-sm font-medium">边框大小</label>
                 <Slider
                   min={0}
                   max={100}
@@ -62,27 +62,53 @@ export function AdjustmentPanel({
                   onValueChange={([value]) => onBorderSizeChange(value)}
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">边框颜色</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={borderColor}
+                    onChange={(e) => onBorderColorChange(e.target.value)}
+                    className="w-8 h-8"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">文字颜色</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => onTextColorChange(e.target.value)}
+                    className="w-8 h-8"
+                  />
+                </div>
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="border" className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Border Color</label>
-                <input
-                  type="color"
-                  value={borderColor}
-                  onChange={(e) => onBorderColorChange(e.target.value)}
-                  className="w-full h-10 rounded-md"
-                />
+                <label className="text-sm font-medium">边框颜色</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={borderColor}
+                    onChange={(e) => onBorderColorChange(e.target.value)}
+                    className="w-8 h-8"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Text Color</label>
-                <input
-                  type="color"
-                  value={textColor}
-                  onChange={(e) => onTextColorChange(e.target.value)}
-                  className="w-full h-10 rounded-md"
-                />
+                <label className="text-sm font-medium">文字颜色</label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => onTextColorChange(e.target.value)}
+                    className="w-8 h-8"
+                  />
+                </div>
               </div>
             </div>
           </TabsContent>

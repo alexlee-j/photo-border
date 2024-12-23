@@ -16,8 +16,11 @@
         "width": 800,
         "height": 600,
         "label": "main",
-        "fullscreen": true,
-        "resizable": false
+        "fullscreen": false,
+        "resizable": true,
+        "maximizable": true,
+        "maximized": false,
+        "center": true
       }
     ],
     "security": {
