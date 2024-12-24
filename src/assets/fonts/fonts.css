@@ -1,0 +1,40 @@
+@font-face {
+  font-family: 'LLBlackMatrix';
+  src: url('./LLBlackMatrix.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./Montserrat-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./Montserrat-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'VonwaonBitmap';
+  src: url('./VonwaonBitmap-12px.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'ZCOOL Addict';
+  src: url('./ZCOOL Addict Italic 01.ttf') format('truetype');
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'ZCOOL Addict';
+  src: url('./ZCOOL Addict Italic 02.ttf') format('truetype');
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Sacramento';
+  src: url('./Sacramento.ttf') format('truetype');
+}

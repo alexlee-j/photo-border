@@ -2,6 +2,7 @@ import React, { forwardRef, useRef, useEffect, useState } from 'react';
 import { IconPhoto } from '@tabler/icons-react';
 import { Watermark } from '@/components/Watermark';
 import { ExifData } from '@/types/index';
+import '@/assets/fonts/fonts.css';
 
 interface ImagePreviewProps {
   hasImage: boolean;
@@ -10,10 +11,27 @@ interface ImagePreviewProps {
   borderSize: number;
   borderColor: string;
   textColor: string;
+  fontFamily: string;
+  fontSize: number;
+  iconSize: number;
+  copyright: string;
+  copyrightPosition: 'top' | 'bottom';
 }
 
 export const ImagePreview = forwardRef<HTMLDivElement, ImagePreviewProps>(
-  ({ hasImage, originalImage, exifData, borderSize, borderColor, textColor }, ref) => {
+  ({ 
+    hasImage, 
+    originalImage, 
+    exifData, 
+    borderSize, 
+    borderColor, 
+    textColor,
+    fontFamily,
+    fontSize,
+    iconSize,
+    copyright,
+    copyrightPosition
+  }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
     const [imgWidth, setImgWidth] = useState<number>(0);
@@ -67,7 +85,7 @@ export const ImagePreview = forwardRef<HTMLDivElement, ImagePreviewProps>(
     }, [originalImage]); // 当图片对象变化时重新设置监听
 
     // 计算图片最大高度
-    const maxImageHeight = Math.max(0, containerHeight - 100 - (borderSize * 2));
+    const maxImageHeight = Math.max(0, containerHeight - (borderSize * 2));
 
     return (
       <div className="flex-1 flex items-center justify-center bg-[#E5E5E5] overflow-auto pointer-events-none">
@@ -85,8 +103,8 @@ export const ImagePreview = forwardRef<HTMLDivElement, ImagePreviewProps>(
             style={{
               backgroundColor: borderColor,
               padding: borderSize,
-              maxWidth: 'calc(100% - 3rem)',
-              maxHeight: 'calc(100% - 3rem)',
+              maxWidth: '100%',
+              maxHeight: '100%',
             }}
           >
             {originalImage && (
@@ -108,6 +126,11 @@ export const ImagePreview = forwardRef<HTMLDivElement, ImagePreviewProps>(
                     exifData={exifData} 
                     textColor={textColor}
                     borderColor={borderColor}
+                    fontFamily={fontFamily}
+                    fontSize={fontSize}
+                    iconSize={iconSize}
+                    copyright={copyright}
+                    copyrightPosition={copyrightPosition}
                   />
                 </div>
               </>

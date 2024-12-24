@@ -1,6 +1,20 @@
 .watermark {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background-color: inherit;
+  height: 5rem;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
+
+.exif {
+  display: flex;
   justify-content: space-between;
+  width: 100%;
+  padding: 0 0.5rem;
 }
 
 .leftSection {
@@ -25,7 +39,7 @@
   display: flex;
   align-items: center;
   padding: 0 24px;
-  gap: 24px;
+  gap: 1rem;
   opacity: 0.9;
 }
 
@@ -36,29 +50,46 @@
 }
 
 .brandIcon {
-  width: 30px;
-  height: 30px;
+  width: 100%;
+  height: 100%;
 }
 
 .divider {
   width: 1px;
-  height: 50px;
+  height: 32px;
   background-color: currentColor;
-  opacity: 0.2;
+  opacity: 0.3;
 }
 
 .infoContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 0.5rem;
 }
 
 .shootingInfo {
   display: flex;
-  gap: 6px;
+  gap: 1rem;
 }
 
 .timestamp {
   text-align: right;
-  opacity: 0.7;
+  opacity: 0.8;
+}
+
+.copyright {
+  text-align: center;
+  /* padding: 0.5rem; */
+  opacity: 0.8;
+}
+
+/* 当版权信息在顶部时，使用底部边框 */
+.watermark[style*="column"] .copyright {
+  border-top: none;
+}
+
+/* 当版权信息在底部时，使用顶部边框 */
+.watermark[style*="column-reverse"] .copyright {
+  border-bottom: none;
 }

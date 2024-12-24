@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { ExifData } from '@/types/index';
 import html2canvas from 'html2canvas';
+import { AdjustmentPanel } from '@/components/layout/AdjustmentPanel';
 
 function App() {
   const [imagePath, setImagePath] = useState<string | null>(null);
@@ -15,6 +16,13 @@ function App() {
   const [borderSize, setBorderSize] = useState(0);
   const [borderColor, setBorderColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#999999');
+  const [fontFamily, setFontFamily] = useState('LLBlackMatrix');
+  const [fontSize, setFontSize] = useState(14);
+  const [iconSize, setIconSize] = useState(32);
+  const [copyright, setCopyright] = useState('');
+  const [copyrightPosition, setCopyrightPosition] = useState<'top' | 'bottom'>('bottom');
+  const [watermark, setWatermark] = useState(''); // 新增水印状态
+  const [watermarkPosition, setWatermarkPosition] = useState<'top' | 'bottom'>('bottom'); // 新增水印位置状态
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -134,7 +142,9 @@ function App() {
         borderSize,
         textColor: convertHexToRgba(textColor),
         borderColor: convertHexToRgba(borderColor),
-        outputPath: savePath
+        outputPath: savePath,
+        watermark, // 新增水印参数
+        watermarkPosition, // 新增水印位置参数
       });
 
       toast({
@@ -154,20 +164,34 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden overscroll-none">
-      <div className="flex flex-col h-screen">
-        <Navbar
-          onOpenFile={handleFileOpen}
-          onSaveFile={handleSave}
-          hasImage={!!imagePath}
-          saving={saving}
-          borderSize={borderSize}
-          onBorderSizeChange={setBorderSize}
-          borderColor={borderColor}
-          onBorderColorChange={setBorderColor}
-          textColor={textColor}
-          onTextColorChange={setTextColor}
-        />
+    <div className="flex flex-col h-screen">
+      <Navbar 
+        onOpenFile={handleFileOpen} 
+        onSaveFile={handleSave}
+        hasImage={!!imagePath}
+        saving={saving}
+        borderSize={borderSize}
+        onBorderSizeChange={setBorderSize}
+        borderColor={borderColor}
+        onBorderColorChange={setBorderColor}
+        textColor={textColor}
+        onTextColorChange={setTextColor}
+        fontFamily={fontFamily}
+        onFontFamilyChange={setFontFamily}
+        fontSize={fontSize}
+        onFontSizeChange={setFontSize}
+        iconSize={iconSize}
+        onIconSizeChange={setIconSize}
+        copyright={copyright}
+        onCopyrightChange={setCopyright}
+        copyrightPosition={copyrightPosition}
+        onCopyrightPositionChange={setCopyrightPosition}
+        watermark={watermark} // 新增水印状态传递
+        onWatermarkChange={setWatermark} // 新增水印处理函数
+        watermarkPosition={watermarkPosition} // 新增水印位置状态传递
+        onWatermarkPositionChange={setWatermarkPosition} // 新增水印位置处理函数
+      />
+      <div className="flex-1 relative">
         <ImagePreview
           ref={previewRef}
           hasImage={!!imagePath}
@@ -176,9 +200,20 @@ function App() {
           borderSize={borderSize}
           borderColor={borderColor}
           textColor={textColor}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          iconSize={iconSize}
+          copyright={copyright}
+          copyrightPosition={copyrightPosition}
+          watermark={watermark} // 新增水印状态传递
+          watermarkPosition={watermarkPosition} // 新增水印位置状态传递
         />
-        <Toaster />
+        <canvas
+          ref={canvasRef}
+          style={{ display: 'none' }}
+        />
       </div>
+      <Toaster />
     </div>
   );
 }
