@@ -2,6 +2,7 @@ use crate::image_processor::{add_border_with_exif, read_exif, ExifData};
 use image::Rgba;
 use std::path::{Path, PathBuf};
 use tauri::command;
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 
 #[command]
 pub fn get_exif_data(path: String) -> Result<ExifData, String> {
@@ -28,4 +29,10 @@ pub fn process_image(
     .and_then(|img| img.save(output_path).map_err(Into::into));
 
     result.map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn save_base64_image(base64_data: &str, output_path: &str) -> Result<(), String> {
+    let data = STANDARD.decode(base64_data).map_err(|e| e.to_string())?;
+    std::fs::write(output_path, &data).map_err(|e| e.to_string())
 }

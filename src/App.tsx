@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [saving, setSaving] = useState<boolean>(false);
+  const [exportQuality, setExportQuality] = useState<'lossless' | 'lossy'>('lossless');
 
   const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -76,6 +77,24 @@ const App: React.FC = () => {
         hiddenPreview.style.visibility = 'visible';
         hiddenPreview.style.zIndex = '-1';
 
+        // 处理SVG图标
+        const uses = hiddenPreview.querySelectorAll('use');
+        for (const use of uses) {
+          const href = use.getAttribute('xlink:href') || use.getAttribute('href');
+          if (!href) continue;
+
+          const iconId = href.split('#')[1];
+          const symbol = document.querySelector(`#${iconId}`);
+          if (symbol) {
+            const parentSvg = use.closest('svg');
+            if (parentSvg) {
+              parentSvg.innerHTML = symbol.innerHTML;
+              // 设置SVG的颜色
+              parentSvg.setAttribute('fill', textColor);
+            }
+          }
+        }
+
         // 等待一帧以确保样式更新
         await new Promise(resolve => requestAnimationFrame(resolve));
         
@@ -94,6 +113,23 @@ const App: React.FC = () => {
               clonedPreview.style.position = 'relative';
               clonedPreview.style.left = '0';
               clonedPreview.style.top = '0';
+              
+              // 在克隆的文档中也处理SVG
+              const clonedUses = clonedPreview.querySelectorAll('use');
+              for (const use of clonedUses) {
+                const href = use.getAttribute('xlink:href') || use.getAttribute('href');
+                if (!href) continue;
+
+                const iconId = href.split('#')[1];
+                const symbol = document.querySelector(`#${iconId}`);
+                if (symbol) {
+                  const parentSvg = use.closest('svg');
+                  if (parentSvg) {
+                    parentSvg.innerHTML = symbol.innerHTML;
+                    parentSvg.setAttribute('fill', textColor);
+                  }
+                }
+              }
             }
           }
         });
@@ -124,7 +160,7 @@ const App: React.FC = () => {
         });
       }
     }, 100);
-  }, [borderColor, originalImage, copyrightPosition, toast]);
+  }, [borderColor, originalImage, copyrightPosition, textColor, toast]);
 
   useEffect(() => {
     if (originalImage) {
@@ -176,7 +212,7 @@ const App: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!imagePath) return;
+    if (!canvasRef.current || !imagePath) return;
 
     try {
       setSaving(true);
@@ -188,7 +224,7 @@ const App: React.FC = () => {
           name: 'Images',
           extensions: ['jpg', 'jpeg', 'png']
         }],
-        defaultPath: `${nameWithoutExt}_with_border.jpg`
+        defaultPath: `${nameWithoutExt}_with_border${exportQuality === 'lossless' ? '.png' : '.jpg'}`
       });
 
       if (!savePath) {
@@ -196,14 +232,19 @@ const App: React.FC = () => {
         return;
       }
 
-      await invoke('process_image', {
-        path: imagePath,
-        borderSize,
-        textColor: convertHexToRgba(textColor),
-        borderColor: convertHexToRgba(borderColor),
-        outputPath: savePath,
-        watermark, 
-        watermarkPosition, 
+      // 获取canvas的数据URL
+      const dataUrl = canvasRef.current.toDataURL(
+        exportQuality === 'lossless' ? 'image/png' : 'image/jpeg',
+        exportQuality === 'lossless' ? undefined : 0.92
+      );
+      
+      // 将base64转换为二进制
+      const base64Data = dataUrl.split(',')[1];
+      
+      // 调用后端保存图片
+      await invoke('save_base64_image', {
+        base64Data,
+        outputPath: savePath
       });
 
       toast({
@@ -245,6 +286,8 @@ const App: React.FC = () => {
         onCopyrightChange={setCopyright}
         copyrightPosition={copyrightPosition}
         onCopyrightPositionChange={setCopyrightPosition}
+        exportQuality={exportQuality}
+        onExportQualityChange={setExportQuality}
       />
       
       {/* 隐藏的预览区域 */}

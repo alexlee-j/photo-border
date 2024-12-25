@@ -3025,6 +3025,7 @@ name = "photo-border"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.21.7",
  "http 0.2.12",
  "image",
  "imageproc",

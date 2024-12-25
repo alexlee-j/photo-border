@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Watermark.module.css';
 import { ExifData } from '@/types/index';
 import { getBrandIconClass } from '@/utils/brandIcons';
@@ -24,10 +24,44 @@ export const Watermark: React.FC<WatermarkProps> = ({
   copyright,
   copyrightPosition = 'bottom'
 }) => {
+  const [brandIconUrl, setBrandIconUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (!exifData) return;
+
+    const brandIconClass = getBrandIconClass(exifData.camera_make ?? '');
+    if (!brandIconClass) return;
+
+    // 获取SVG图标的实际内容
+    const iconElement = document.querySelector(`#${brandIconClass}`);
+    if (!iconElement) return;
+
+    // 获取symbol中的path内容
+    const pathContent = iconElement.querySelector('path')?.outerHTML || '';
+    if (!pathContent) return;
+
+    // 获取原始symbol的viewBox
+    const symbolViewBox = iconElement.getAttribute('viewBox') || '0 0 1820 1024';
+
+    // 创建新的SVG元素，直接包含路径内容
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    svg.setAttribute('viewBox', symbolViewBox);
+    svg.setAttribute('width', `${iconSize}`);
+    svg.setAttribute('height', `${Math.floor(iconSize * (1024/1820))}`); // 保持宽高比
+    svg.setAttribute('fill', textColor);
+    svg.innerHTML = pathContent;
+
+    // 将SVG转换为base64
+    const svgString = new XMLSerializer().serializeToString(svg);
+    const base64 = btoa(unescape(encodeURIComponent(svgString)));
+    const url = `data:image/svg+xml;base64,${base64}`;
+
+    setBrandIconUrl(url);
+  }, [exifData, iconSize, textColor]);
+
   if (!exifData) return null;
 
-  const brandIconClass = getBrandIconClass(exifData.camera_make ?? '');
-  
   // 移除相机品牌和型号中的引号
   const cameraMake = (exifData.camera_make ?? '').replace(/['"]/g, '');
   const cameraModel = (exifData.camera_model ?? '').replace(/['"]/g, '');
@@ -36,7 +70,7 @@ export const Watermark: React.FC<WatermarkProps> = ({
   // 格式化时间
   const formatDate = (dateStr: string | undefined) => {
     if (!dateStr) return '';
-    
+
     // 处理不同格式的日期字符串
     const formats = [
       // 标准ISO格式
@@ -78,12 +112,12 @@ export const Watermark: React.FC<WatermarkProps> = ({
       hour12: false
     }).replace(/\//g, '-');
   };
-  
+
   const WatermarkContent = () => (
     <div className={styles.exif}>
-      <div 
+      <div
         className={styles.leftSection}
-        style={{ 
+        style={{
           fontFamily,
           fontSize: `${fontSize}px`,
         }}
@@ -91,25 +125,32 @@ export const Watermark: React.FC<WatermarkProps> = ({
         <p className={styles.cameraModel}>{cameraModel}</p>
         <p className={styles.cameraMake}>{lensModel}</p>
       </div>
-      
+
       <div className={styles.rightSection}>
-        {brandIconClass && (
-          <div 
+        {brandIconUrl && (
+          <div
             className={styles.brandIconContainer}
-            style={{ 
-              width: `${iconSize}px`, 
-              height: `${iconSize}px` 
+            style={{
+              width: `${iconSize}px`,
+              height: `${Math.floor(iconSize * (1024/1820))}px` // 保持宽高比
             }}
           >
-            <svg className={styles.brandIcon} viewBox="0 0 1024 1024">
-              <use xlinkHref={`#${brandIconClass}`} />
-            </svg>
+            <img
+              src={brandIconUrl}
+              alt="Brand Icon"
+              className={styles.brandIcon}
+              style={{
+                width: '100%',
+                height: '100%',
+                color: textColor
+              }}
+            />
           </div>
         )}
         <div className={styles.divider} style={{ backgroundColor: textColor }} />
-        <div 
+        <div
           className={styles.infoContainer}
-          style={{ 
+          style={{
             fontFamily,
             fontSize: `${fontSize}px`,
           }}
@@ -129,9 +170,9 @@ export const Watermark: React.FC<WatermarkProps> = ({
   );
 
   const Copyright = () => copyright ? (
-    <div 
+    <div
       className={styles.copyright}
-      style={{ 
+      style={{
         fontFamily,
         fontSize: `${fontSize}px`,
       }}
@@ -141,10 +182,10 @@ export const Watermark: React.FC<WatermarkProps> = ({
   ) : null;
 
   return (
-    <div 
-      className={styles.watermark} 
-      style={{ 
-        color: textColor, 
+    <div
+      className={styles.watermark}
+      style={{
+        color: textColor,
         backgroundColor: borderColor,
         flexDirection: copyrightPosition === 'top' ? 'column' : 'column-reverse'
       }}

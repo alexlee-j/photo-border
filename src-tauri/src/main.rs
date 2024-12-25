@@ -18,7 +18,11 @@ fn main() {
             
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![commands::get_exif_data, commands::process_image])
+        .invoke_handler(tauri::generate_handler![
+            commands::get_exif_data,
+            commands::process_image,
+            commands::save_base64_image
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

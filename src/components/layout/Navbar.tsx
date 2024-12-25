@@ -31,6 +31,8 @@ interface NavbarProps {
   onCopyrightChange: (text: string) => void;
   copyrightPosition: 'top' | 'bottom';
   onCopyrightPositionChange: (position: 'top' | 'bottom') => void;
+  exportQuality: 'lossless' | 'lossy';
+  onExportQualityChange: (quality: 'lossless' | 'lossy') => void;
 }
 
 const fontFamilies = [
@@ -62,6 +64,8 @@ export function Navbar({
   onCopyrightChange,
   copyrightPosition,
   onCopyrightPositionChange,
+  exportQuality,
+  onExportQualityChange,
 }: NavbarProps) {
   return (
     <div className="h-16 border-b bg-background flex items-center justify-between px-4">
@@ -86,6 +90,35 @@ export function Navbar({
             >
               <IconDownload className="h-5 w-5" />
             </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="h-9 px-3">
+                  {exportQuality === 'lossless' ? '无损导出' : '有损导出'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48" align="start">
+                <div className="space-y-2">
+                  <Label>导出质量</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant={exportQuality === 'lossless' ? 'default' : 'outline'}
+                      onClick={() => onExportQualityChange('lossless')}
+                      className="w-full"
+                    >
+                      无损
+                    </Button>
+                    <Button
+                      variant={exportQuality === 'lossy' ? 'default' : 'outline'}
+                      onClick={() => onExportQualityChange('lossy')}
+                      className="w-full"
+                    >
+                      有损
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <div className="h-4 w-px bg-border mx-2" />
 
