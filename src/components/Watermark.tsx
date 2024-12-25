@@ -7,9 +7,23 @@ interface WatermarkProps {
   exifData: ExifData | null;
   textColor?: string;
   borderColor: string;
+  fontFamily?: string;
+  fontSize?: number;
+  iconSize?: number;
+  copyright?: string;
+  copyrightPosition?: 'top' | 'bottom';
 }
 
-export const Watermark: React.FC<WatermarkProps> = ({ exifData, textColor = '#999999', borderColor }) => {
+export const Watermark: React.FC<WatermarkProps> = ({
+  exifData,
+  textColor = '#999999',
+  borderColor,
+  fontFamily = 'LLBlackMatrix',
+  fontSize = 14,
+  iconSize = 32,
+  copyright,
+  copyrightPosition = 'bottom'
+}) => {
   if (!exifData) return null;
 
   const brandIconClass = getBrandIconClass(exifData.camera_make ?? '');
@@ -29,7 +43,6 @@ export const Watermark: React.FC<WatermarkProps> = ({ exifData, textColor = '#99
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
       // YYYY:MM:DD HH:MM:SS 格式
       /^\d{4}:\d{2}:\d{2}\s\d{2}:\d{2}:\d{2}/,
-      // 其他可能的格式...
     ];
 
     let date: Date | null = null;
@@ -66,26 +79,44 @@ export const Watermark: React.FC<WatermarkProps> = ({ exifData, textColor = '#99
     }).replace(/\//g, '-');
   };
   
-  return (
-    <div className="flex justify-between h-16 text-sm" style={{ color: textColor, backgroundColor: borderColor }}>
-      <div className={styles.leftSection}>
+  const WatermarkContent = () => (
+    <div className={styles.exif}>
+      <div 
+        className={styles.leftSection}
+        style={{ 
+          fontFamily,
+          fontSize: `${fontSize}px`,
+        }}
+      >
         <p className={styles.cameraModel}>{cameraModel}</p>
         <p className={styles.cameraMake}>{lensModel}</p>
       </div>
       
       <div className={styles.rightSection}>
         {brandIconClass && (
-          <div className={styles.brandIconContainer}>
+          <div 
+            className={styles.brandIconContainer}
+            style={{ 
+              width: `${iconSize}px`, 
+              height: `${iconSize}px` 
+            }}
+          >
             <svg className={styles.brandIcon} viewBox="0 0 1024 1024">
               <use xlinkHref={`#${brandIconClass}`} />
             </svg>
           </div>
         )}
         <div className={styles.divider} style={{ backgroundColor: textColor }} />
-        <div className={styles.infoContainer}>
+        <div 
+          className={styles.infoContainer}
+          style={{ 
+            fontFamily,
+            fontSize: `${fontSize}px`,
+          }}
+        >
           <div className={styles.shootingInfo}>
             <span>F{exifData.f_number}</span>
-            <span>ISO{exifData.iso}</span>
+            <span>ISO {exifData.iso}</span>
             <span>{exifData.focal_length}mm</span>
             <span>{exifData.exposure_time}s</span>
           </div>
@@ -94,6 +125,32 @@ export const Watermark: React.FC<WatermarkProps> = ({ exifData, textColor = '#99
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  const Copyright = () => copyright ? (
+    <div 
+      className={styles.copyright}
+      style={{ 
+        fontFamily,
+        fontSize: `${fontSize}px`,
+      }}
+    >
+      {copyright}
+    </div>
+  ) : null;
+
+  return (
+    <div 
+      className={styles.watermark} 
+      style={{ 
+        color: textColor, 
+        backgroundColor: borderColor,
+        flexDirection: copyrightPosition === 'top' ? 'column' : 'column-reverse'
+      }}
+    >
+      <Copyright />
+      <WatermarkContent />
     </div>
   );
 };

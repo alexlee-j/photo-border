@@ -1,24 +1,35 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { open, save } from '@tauri-apps/plugin-dialog';
+import { IconPhoto } from '@tabler/icons-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { ImagePreview } from '@/components/layout/ImagePreview';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { ExifData } from '@/types/index';
 import html2canvas from 'html2canvas';
+import { Watermark } from '@/components/Watermark';
 
-function App() {
+const App: React.FC = () => {
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null);
   const [exifData, setExifData] = useState<ExifData | null>(null);
   const [borderSize, setBorderSize] = useState(0);
   const [borderColor, setBorderColor] = useState('#FFFFFF');
   const [textColor, setTextColor] = useState('#999999');
+  const [fontFamily, setFontFamily] = useState('LLBlackMatrix');
+  const [fontSize, setFontSize] = useState(14);
+  const [iconSize, setIconSize] = useState(32);
+  const [copyright, setCopyright] = useState('');
+  const [copyrightPosition, setCopyrightPosition] = useState<'top' | 'bottom'>('bottom');
+  const [watermark, setWatermark] = useState(''); 
+  const [watermarkPosition, setWatermarkPosition] = useState<'top' | 'bottom'>('bottom'); 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [saving, setSaving] = useState<boolean>(false);
+
+  const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadImage = (url: string) => {
     const img = document.createElement('img');
@@ -32,49 +43,105 @@ function App() {
   const renderToCanvas = useCallback(async () => {
     if (!canvasRef.current || !originalImage) return;
 
-    const previewContainer = document.getElementById('preview-container');
-    if (!previewContainer) return;
+    const hiddenPreview = document.getElementById('hidden-preview');
+    if (!hiddenPreview) return;
 
-    // 临时显示预览容器以便 html2canvas 可以捕获
-    previewContainer.style.display = 'block';
-    
-    const canvas = await html2canvas(previewContainer, {
-      scale: 2, // 提高渲染质量
-      useCORS: true,
-      backgroundColor: borderColor,
-      logging: false,
-      imageTimeout: 0,
-      onclone: (clonedDoc) => {
-        // 确保克隆的预览容器是可见的
-        const clonedPreview = clonedDoc.getElementById('preview-container');
-        if (clonedPreview) {
-          clonedPreview.style.display = 'block';
-        }
+    // 清除之前的延时渲染
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
+    }
+
+    // 使用延时来防止频繁渲染
+    renderTimeoutRef.current = setTimeout(async () => {
+      try {
+        // 计算最终图片的尺寸
+        const containerWidth = 1080;
+        const imgAspectRatio = originalImage.naturalHeight / originalImage.naturalWidth;
+        const containerHeight = containerWidth * imgAspectRatio;
+
+        // 设置隐藏预览区域的尺寸
+        hiddenPreview.style.width = `${containerWidth}px`;
+        
+        // 临时将隐藏区域移到可视区域以确保完整渲染
+        const originalStyle = {
+          left: hiddenPreview.style.left,
+          top: hiddenPreview.style.top,
+          position: hiddenPreview.style.position,
+          visibility: hiddenPreview.style.visibility
+        };
+
+        hiddenPreview.style.left = '0';
+        hiddenPreview.style.top = '0';
+        hiddenPreview.style.position = 'fixed';
+        hiddenPreview.style.visibility = 'visible';
+        hiddenPreview.style.zIndex = '-1';
+
+        // 等待一帧以确保样式更新
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        const canvas = await html2canvas(hiddenPreview, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: borderColor,
+          logging: false,
+          imageTimeout: 0,
+          width: containerWidth,
+          height: Math.ceil(containerHeight + (copyrightPosition === 'bottom' ? 80 : 80)), // 增加水印空间
+          onclone: (clonedDoc) => {
+            const clonedPreview = clonedDoc.getElementById('hidden-preview');
+            if (clonedPreview) {
+              clonedPreview.style.visibility = 'visible';
+              clonedPreview.style.position = 'relative';
+              clonedPreview.style.left = '0';
+              clonedPreview.style.top = '0';
+            }
+          }
+        });
+
+        // 恢复隐藏区域的原始样式
+        hiddenPreview.style.left = originalStyle.left;
+        hiddenPreview.style.top = originalStyle.top;
+        hiddenPreview.style.position = originalStyle.position as string;
+        hiddenPreview.style.visibility = originalStyle.visibility;
+        hiddenPreview.style.zIndex = '';
+
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
+
+        // 设置画布尺寸
+        canvasRef.current.width = canvas.width;
+        canvasRef.current.height = canvas.height;
+        
+        // 清除之前的内容并绘制新内容
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(canvas, 0, 0);
+      } catch (error) {
+        console.error('Error rendering canvas:', error);
+        toast({
+          title: '渲染失败',
+          description: '图片渲染时发生错误，请重试',
+          variant: 'destructive',
+        });
       }
-    });
-
-    // 隐藏预览容器
-    previewContainer.style.display = 'none';
-
-    const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
-
-    // 设置 canvas 尺寸为预览容器的实际尺寸
-    canvasRef.current.width = canvas.width;
-    canvasRef.current.height = canvas.height;
-    
-    // 清除之前的内容
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 绘制新内容
-    ctx.drawImage(canvas, 0, 0);
-  }, [borderColor, originalImage]);
+    }, 100);
+  }, [borderColor, originalImage, copyrightPosition, toast]);
 
   useEffect(() => {
     if (originalImage) {
       renderToCanvas();
     }
-  }, [originalImage, renderToCanvas]);
+  }, [
+    originalImage,
+    borderSize,
+    borderColor,
+    textColor,
+    fontFamily,
+    fontSize,
+    iconSize,
+    copyright,
+    copyrightPosition,
+    renderToCanvas
+  ]);
 
   const handleFileOpen = async () => {
     try {
@@ -134,7 +201,9 @@ function App() {
         borderSize,
         textColor: convertHexToRgba(textColor),
         borderColor: convertHexToRgba(borderColor),
-        outputPath: savePath
+        outputPath: savePath,
+        watermark, 
+        watermarkPosition, 
       });
 
       toast({
@@ -154,33 +223,87 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden overscroll-none">
-      <div className="flex flex-col h-screen">
-        <Navbar
-          onOpenFile={handleFileOpen}
-          onSaveFile={handleSave}
-          hasImage={!!imagePath}
-          saving={saving}
-          borderSize={borderSize}
-          onBorderSizeChange={setBorderSize}
-          borderColor={borderColor}
-          onBorderColorChange={setBorderColor}
-          textColor={textColor}
-          onTextColorChange={setTextColor}
-        />
-        <ImagePreview
-          ref={previewRef}
-          hasImage={!!imagePath}
-          originalImage={originalImage}
-          exifData={exifData}
-          borderSize={borderSize}
-          borderColor={borderColor}
-          textColor={textColor}
-        />
-        <Toaster />
+    <div className="h-screen w-screen flex flex-col overflow-hidden">
+      <Navbar
+        onOpenFile={handleFileOpen} 
+        onSaveFile={handleSave}
+        hasImage={!!imagePath}
+        saving={saving}
+        borderSize={borderSize}
+        onBorderSizeChange={setBorderSize}
+        borderColor={borderColor}
+        onBorderColorChange={setBorderColor}
+        textColor={textColor}
+        onTextColorChange={setTextColor}
+        fontFamily={fontFamily}
+        onFontFamilyChange={setFontFamily}
+        fontSize={fontSize}
+        onFontSizeChange={setFontSize}
+        iconSize={iconSize}
+        onIconSizeChange={setIconSize}
+        copyright={copyright}
+        onCopyrightChange={setCopyright}
+        copyrightPosition={copyrightPosition}
+        onCopyrightPositionChange={setCopyrightPosition}
+      />
+      
+      {/* 隐藏的预览区域 */}
+      <div 
+        id="hidden-preview"
+        className="fixed visibility-hidden pointer-events-none"
+        style={{ 
+          left: '-9999px',
+          top: '-9999px',
+          backgroundColor: borderColor,
+          padding: `${borderSize}px`,
+          width: '1080px'
+        }}
+      >
+        {originalImage && (
+          <>
+            <img
+              src={originalImage.src}
+              alt="hidden preview"
+              style={{ 
+                width: '100%',
+                height: 'auto',
+                display: 'block'
+              }}
+            />
+            <Watermark
+              exifData={exifData}
+              borderColor={borderColor}
+              textColor={textColor}
+              fontFamily={fontFamily}
+              fontSize={fontSize}
+              iconSize={iconSize}
+              copyright={copyright}
+              copyrightPosition={copyrightPosition}
+            />
+          </>
+        )}
       </div>
+
+      {/* 实际预览区域 */}
+      <div className="flex-1 flex items-center justify-center bg-[#E5E5E5] overflow-auto">
+        {!imagePath ? (
+          <div className="flex flex-col items-center justify-center gap-4">
+            <IconPhoto className="w-12 h-12 text-gray-400" stroke={1.5} />
+            <p className="text-gray-500 text-lg">点击左上角文件夹图标打开图片</p>
+          </div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            className="max-w-full max-h-full object-contain"
+            style={{
+              backgroundColor: borderColor,
+            }}
+          />
+        )}
+      </div>
+      <Toaster />
     </div>
   );
-}
+};
 
 export default App;

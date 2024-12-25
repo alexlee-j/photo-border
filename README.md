@@ -1,86 +1,74 @@
-# Photo Border - 图片边框处理工具
+## 当前预览区添加水印功能已完成，需要进行进一步优化，增加对水印区的自定义控制
 
-这是一个基于Tauri + React开发的跨平台桌面应用程序，用于为图片添加边框、水印等效果。
+1、新增水印字体样式设置，支持******
+2、水印区icon大小设置
+3、水印区增加版权信息设置
+(1) 默认不展示版权信息
+(2) 用户自行通过输入框输入文字
+(3) 版权信息文字居中，默认位置在现有水印区的下方
+(4) 版权信息位置可调整，可调整到现水印区的上方或下方
+
+# Photo Border
+
+一个简单的图片边框和水印添加工具，基于 Tauri + React + TypeScript 开发。
 
 ## 功能特点
 
-- 支持批量导入图片
-- 自定义边框样式和颜色
-- 添加品牌水印
-- 图片预览和实时效果
-- 批量导出处理后的图片
-- 跨平台支持（Windows、macOS）
+1. 图片边框
+   - 可调整边框大小
+   - 可自定义边框颜色
 
-## 开发环境配置
+2. 水印功能
+   - 显示相机型号和镜头信息
+   - 显示拍摄参数（光圈、ISO、焦距、快门速度）
+   - 显示拍摄时间
+   - 显示相机品牌图标
+   - 自定义水印样式：
+     - 字体选择（支持多种常用字体）
+     - 字体大小调整（10-24px）
+     - 文字颜色设置
+     - 图标大小调整（16-48px）
+   - 版权信息：
+     - 可选择是否显示
+     - 支持自定义文本
+     - 可选择显示在水印区上方或下方
+     - 文字居中显示
 
-### 前置要求
+## 使用说明
 
-1. Node.js (推荐 v18+)
-2. Rust (用于Tauri开发)
-   - Windows: 安装[Visual Studio C++ 生成工具](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-   - 安装[Rust](https://www.rust-lang.org/tools/install)
+1. 打开图片
+   - 点击左上角文件夹图标
+   - 选择要处理的图片文件（支持 PNG、JPG、JPEG 格式）
 
-### 开发工具推荐
+2. 调整边框
+   - 在"调整"选项卡中设置边框大小
+   - 在"边框"选项卡中设置边框颜色
 
-- [VS Code](https://code.visualstudio.com/) 
-- VS Code插件:
-  - [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode)
-  - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+3. 自定义水印
+   - 在"水印"选项卡中：
+     - 选择字体样式
+     - 调整字体大小
+     - 设置文字颜色
+     - 调整图标大小
+     - 添加版权信息（可选）
+     - 选择版权信息位置
 
-## 本地开发
+4. 保存图片
+   - 点击保存按钮
+   - 选择保存位置
+   - 图片将以原始分辨率保存
 
-1. 安装依赖:
-```bash
-npm install
-```
+## 开发计划
 
-2. 启动开发服务器:
-```bash
-npm run tauri dev
-```
+- [x] 基础边框功能
+- [x] 基础水印功能
+- [x] 水印样式自定义
+- [x] 版权信息功能
+- [ ] 水印模板保存和加载
+- [ ] 批量处理功能
+- [ ] 更多品牌图标支持
+- [ ] 更多字体支持
 
-## 构建应用
+## 反馈与建议
 
-### Windows版本构建
-
-1. 确保已安装所有依赖
-2. 运行构建命令:
-```bash
-npm run tauri build
-```
-
-构建完成后，可以在 `src-tauri/target/release/bundle` 目录下找到打包好的Windows安装程序。
-
-### 其他平台构建
-
-- macOS: 同样使用 `npm run tauri build` 命令
-- Linux: 需要安装额外的依赖，请参考[Tauri官方文档](https://tauri.app/v1/guides/getting-started/prerequisites#linux)
-
-## 技术栈
-
-- 前端框架: React + TypeScript
-- UI组件: Radix UI
-- 样式: Tailwind CSS
-- 桌面应用框架: Tauri
-- 构建工具: Vite
-
-## 项目结构
-
-```
-photo-border/
-├── src/                # React源代码
-├── src-tauri/         # Tauri/Rust源代码
-├── public/            # 静态资源
-└── ...
-```
-
-## 贡献指南
-
-1. Fork 项目
-2. 创建新的功能分支
-3. 提交更改
-4. 发起 Pull Request
-
-## 许可证
-
-[MIT License](LICENSE)
+如果您在使用过程中遇到问题或有任何建议，欢迎提出。我们会认真考虑每一条反馈，不断改进产品体验。
