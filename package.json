@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "macos:build-windows": "bash build-windows.sh"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",

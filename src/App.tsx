@@ -7,7 +7,6 @@ import { ImagePreview } from '@/components/layout/ImagePreview';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { ExifData } from '@/types/index';
-import html2canvas from 'html2canvas';
 import { Watermark } from '@/components/Watermark';
 
 const App: React.FC = () => {
@@ -98,6 +97,8 @@ const App: React.FC = () => {
         // 等待一帧以确保样式更新
         await new Promise(resolve => requestAnimationFrame(resolve));
         
+        // 动态导入 html2canvas
+        const { default: html2canvas } = await import('html2canvas');
         const canvas = await html2canvas(hiddenPreview, {
           scale: 2,
           useCORS: true,
@@ -144,6 +145,7 @@ const App: React.FC = () => {
         const ctx = canvasRef.current?.getContext('2d');
         if (!ctx) return;
 
+        if(!canvasRef.current) return;
         // 设置画布尺寸
         canvasRef.current.width = canvas.width;
         canvasRef.current.height = canvas.height;
@@ -293,13 +295,11 @@ const App: React.FC = () => {
       {/* 隐藏的预览区域 */}
       <div 
         id="hidden-preview"
-        className="fixed visibility-hidden pointer-events-none"
-        style={{ 
+        style={{
+          position: 'absolute',
           left: '-9999px',
           top: '-9999px',
-          backgroundColor: borderColor,
-          padding: `${borderSize}px`,
-          width: '1080px'
+          visibility: 'hidden',
         }}
       >
         {originalImage && (

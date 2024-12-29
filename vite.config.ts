@@ -29,6 +29,29 @@ export default defineConfig(async () => ({
     outDir: 'dist',
     sourcemap: true,
     target: ['es2020'],
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // 将 node_modules 中的代码单独打包
+          if (id.includes('node_modules')) {
+            if (id.includes('html2canvas')) {
+              return 'html2canvas';
+            }
+            if (id.includes('@tauri')) {
+              return 'tauri';
+            }
+            if (id.includes('react')) {
+              return 'react-vendor';
+            }
+            return 'vendor';
+          }
+          // 将字体文件单独打包
+          if (id.includes('/assets/fonts/')) {
+            return 'fonts';
+          }
+        }
+      }
+    }
   },
   esbuild: {
     // Add TypeScript support
