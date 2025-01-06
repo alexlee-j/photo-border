@@ -16,6 +16,7 @@ export default defineConfig(async () => ({
       '@/hooks': path.resolve(__dirname, './src/hooks'),
       '@/lib': path.resolve(__dirname, './src/lib'),
       '@radix-ui/react-icons': '@radix-ui/react-icons',
+      "@/assets": path.resolve(__dirname, "./src/assets"),
     },
   },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

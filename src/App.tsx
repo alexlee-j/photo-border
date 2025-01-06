@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [watermarkPosition, setWatermarkPosition] = useState<'top' | 'bottom'>('bottom'); 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const watermarkRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [saving, setSaving] = useState<boolean>(false);
   const [exportQuality, setExportQuality] = useState<'lossless' | 'lossy'>('lossless');
@@ -63,18 +64,20 @@ const App: React.FC = () => {
         hiddenPreview.style.width = `${containerWidth}px`;
         
         // 临时将隐藏区域移到可视区域以确保完整渲染
-        const originalStyle = {
+        const originalStyles = {
+          position: hiddenPreview.style.position,
           left: hiddenPreview.style.left,
           top: hiddenPreview.style.top,
-          position: hiddenPreview.style.position,
           visibility: hiddenPreview.style.visibility
         };
 
+        hiddenPreview.style.position = 'fixed';
         hiddenPreview.style.left = '0';
         hiddenPreview.style.top = '0';
-        hiddenPreview.style.position = 'fixed';
-        hiddenPreview.style.visibility = 'visible';
+        hiddenPreview.style.visibility = 'hidden';
         hiddenPreview.style.zIndex = '-1';
+        hiddenPreview.style.pointerEvents = 'none';
+        hiddenPreview.style.overflow = 'visible';
 
         // 处理SVG图标
         const uses = hiddenPreview.querySelectorAll('use');
@@ -99,60 +102,66 @@ const App: React.FC = () => {
         
         // 动态导入 html2canvas
         const { default: html2canvas } = await import('html2canvas');
+        
+        // 计算水印区域的高度
+        const watermarkHeight = watermarkRef.current?.offsetHeight || 0;
+        
+        // 等待一帧以确保水印区域渲染完成
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        const totalHeight = Math.ceil(containerHeight + borderSize * 2 + watermarkHeight);
+        
         const canvas = await html2canvas(hiddenPreview, {
           scale: 2,
           useCORS: true,
-          backgroundColor: borderColor,
+          allowTaint: true,
+          backgroundColor: null,
           logging: false,
           imageTimeout: 0,
           width: containerWidth,
-          height: Math.ceil(containerHeight + (copyrightPosition === 'bottom' ? 80 : 80)), // 增加水印空间
+          height: totalHeight,
           onclone: (clonedDoc) => {
             const clonedPreview = clonedDoc.getElementById('hidden-preview');
             if (clonedPreview) {
               clonedPreview.style.visibility = 'visible';
-              clonedPreview.style.position = 'relative';
-              clonedPreview.style.left = '0';
-              clonedPreview.style.top = '0';
+              clonedPreview.style.position = 'static';
+              clonedPreview.style.transform = 'none';
+              clonedPreview.style.width = `${containerWidth}px`;
+              clonedPreview.style.height = `${totalHeight}px`;
               
-              // 在克隆的文档中也处理SVG
-              const clonedUses = clonedPreview.querySelectorAll('use');
-              for (const use of clonedUses) {
-                const href = use.getAttribute('xlink:href') || use.getAttribute('href');
-                if (!href) continue;
-
-                const iconId = href.split('#')[1];
-                const symbol = document.querySelector(`#${iconId}`);
-                if (symbol) {
-                  const parentSvg = use.closest('svg');
-                  if (parentSvg) {
-                    parentSvg.innerHTML = symbol.innerHTML;
-                    parentSvg.setAttribute('fill', textColor);
-                  }
-                }
+              // 确保水印区域可见
+              const watermarkContainer = clonedPreview.querySelector('[class*="watermark"]');
+              if (watermarkContainer) {
+                (watermarkContainer as HTMLElement).style.position = 'relative';
+                (watermarkContainer as HTMLElement).style.visibility = 'visible';
+                (watermarkContainer as HTMLElement).style.height = `${watermarkHeight}px`;
               }
             }
           }
         });
 
-        // 恢复隐藏区域的原始样式
-        hiddenPreview.style.left = originalStyle.left;
-        hiddenPreview.style.top = originalStyle.top;
-        hiddenPreview.style.position = originalStyle.position as string;
-        hiddenPreview.style.visibility = originalStyle.visibility;
-        hiddenPreview.style.zIndex = '';
-
-        const ctx = canvasRef.current?.getContext('2d');
-        if (!ctx) return;
-
-        if(!canvasRef.current) return;
-        // 设置画布尺寸
-        canvasRef.current.width = canvas.width;
-        canvasRef.current.height = canvas.height;
+        // 创建一个新的画布来绘制带边框的图像
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = canvas.width;
+        finalCanvas.height = canvas.height;
         
-        // 清除之前的内容并绘制新内容
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(canvas, 0, 0);
+        const finalCtx = finalCanvas.getContext('2d');
+        if (!finalCtx) return;
+
+        // 绘制背景色（边框颜色）
+        finalCtx.fillStyle = borderColor;
+        finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        
+        // 绘制转换后的图像
+        finalCtx.drawImage(canvas, 0, 0);
+
+        // 将最终结果绘制到显示用的画布上
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx || !canvasRef.current) return;
+
+        canvasRef.current.width = finalCanvas.width;
+        canvasRef.current.height = finalCanvas.height;
+        ctx.drawImage(finalCanvas, 0, 0);
       } catch (error) {
         console.error('Error rendering canvas:', error);
         toast({
@@ -162,7 +171,7 @@ const App: React.FC = () => {
         });
       }
     }, 100);
-  }, [borderColor, originalImage, copyrightPosition, textColor, toast]);
+  }, [borderSize, borderColor, originalImage, copyrightPosition, textColor, toast]);
 
   useEffect(() => {
     if (originalImage) {
@@ -300,6 +309,8 @@ const App: React.FC = () => {
           left: '-9999px',
           top: '-9999px',
           visibility: 'hidden',
+          padding: `${borderSize}px`,
+          backgroundColor: borderColor,
         }}
       >
         {originalImage && (
@@ -314,6 +325,7 @@ const App: React.FC = () => {
               }}
             />
             <Watermark
+              ref={watermarkRef}
               exifData={exifData}
               borderColor={borderColor}
               textColor={textColor}
