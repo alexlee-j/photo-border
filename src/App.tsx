@@ -105,11 +105,11 @@ const App: React.FC = () => {
         
         // 计算水印区域的高度
         const watermarkHeight = watermarkRef.current?.offsetHeight || 0;
-        
+
         // 等待一帧以确保水印区域渲染完成
         await new Promise(resolve => requestAnimationFrame(resolve));
         
-        const totalHeight = Math.ceil(containerHeight + borderSize * 2 + watermarkHeight);
+        const totalHeight = Math.ceil(containerHeight + borderSize + watermarkHeight);
         
         const canvas = await html2canvas(hiddenPreview, {
           scale: 2,
@@ -168,6 +168,7 @@ const App: React.FC = () => {
           title: '渲染失败',
           description: '图片渲染时发生错误，请重试',
           variant: 'destructive',
+          duration: 3000
         });
       }
     }, 100);
@@ -261,6 +262,7 @@ const App: React.FC = () => {
       toast({
         title: "保存成功",
         description: "图片已成功保存。",
+        duration: 3000
       });
     } catch (e) {
       console.error('Failed to save image:', e);
@@ -268,6 +270,7 @@ const App: React.FC = () => {
         title: "保存失败",
         description: "图片保存过程中出现错误。",
         variant: "destructive",
+        duration: 3000
       });
     } finally {
       setSaving(false);
